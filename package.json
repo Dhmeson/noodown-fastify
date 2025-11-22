@@ -19,7 +19,6 @@
   ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist types",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
@@ -36,12 +35,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/Dhmeson/noodown-express"
   },
   "bugs": {
-    "url": ""
+    "url": "https://github.com/Dhmeson/noodown-express/issues"
   },
-  "homepage": "",
+  "homepage": "https://noodown.com",
   "engines": {
     "node": ">=18.0.0"
   },
