@@ -1,6 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config();
-import { Request, Response, NextFunction } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 
 interface LogData {
   method: string;
@@ -23,13 +21,13 @@ class LogBuilder {
     this.startTime = process.hrtime.bigint();
   }
 
-  build(req: Request, res: Response): LogData {
+  build(req: FastifyRequest, res: FastifyReply): LogData {
     const end = process.hrtime.bigint();
     const durationMs = Number(end - this.startTime) / 1_000_000;
 
     return {
       method: req.method || "UNKNOWN",
-      path: req.originalUrl || req.url || "/",
+      path: req.url || "/",
       status: res.statusCode,
       duration_ms: durationMs.toFixed(2),
       timestamp: new Date().toISOString(),
@@ -42,7 +40,7 @@ class LogBuilder {
     };
   }
 
-  private extractClientIp(req: Request): string | undefined {
+  private extractClientIp(req: FastifyRequest): string | undefined {
     const forwardedFor = this.extractHeader(req, "x-forwarded-for");
     if (forwardedFor) {
       return forwardedFor.split(",")[0].trim();
@@ -57,14 +55,11 @@ class LogBuilder {
     if (req.socket?.remoteAddress) {
       return req.socket.remoteAddress;
     }
-    if (req.connection?.remoteAddress) {
-      return req.connection.remoteAddress;
-    }
     return undefined;
   }
 
   private extractHeader(
-    req: Request,
+    req: FastifyRequest,
     headerName: string
   ): string | undefined {
     const headers = req.headers || {};
@@ -74,9 +69,9 @@ class LogBuilder {
   }
 }
 
-function saveLog(logData: LogData) {
+function saveLog(payload: LogData) {
   const SERVER_KEY = process.env.SERVER_KEY || '';
- 
+  
   const url = `https://noodown.com/api/v1/logs/${SERVER_KEY}`;
   
   fetch(url, {
@@ -84,25 +79,26 @@ function saveLog(logData: LogData) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(logData),
+    body: JSON.stringify(payload),
     keepalive: true,
   }).catch(() => {});
 }
 
-function observabilityRoutes(
-  req: Request,
-  res: Response,
-  next: NextFunction
+export function observabilityRoutes(
+  req: FastifyRequest,
+  res: FastifyReply,
+  done: () => void
 ) {
   const logBuilder = new LogBuilder();
   
-  res.on('close', () => {
-    const log = logBuilder.build(req, res);
-    saveLog(log);
-  });
+  if (res.raw?.on) {
+    res.raw.on('close', () => {
+      const log = logBuilder.build(req, res);
+      saveLog(log);
+    });
+  }
   
-  next();
+  done();
 }
 
 export default observabilityRoutes;
-

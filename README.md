@@ -1,92 +1,95 @@
-# noodown-express
+# noodown-fastify
 
-Middleware de observabilidade para Express.js que envia logs de requisições HTTP para o serviço Noodown.
+Observability plugin for Fastify that sends HTTP request logs to the Noodown service.
 
-## Instalação
+## Installation
 
 ```bash
-npm install noodown-express
+npm install noodown-fastify
 ```
 
-## Requisitos
+## Requirements
 
 - Node.js >= 18.0.0
-- Express.js >= 4.18.0
+- Fastify >= 5.6.2
 
-## Configuração
+## Configuration
 
-Antes de usar o middleware, você precisa configurar a variável de ambiente `SERVER_KEY` com sua chave de servidor do Noodown.
+Before using the plugin, you need to configure the `SERVER_KEY` environment variable with your Noodown server key.
 
-### Usando dotenv
+### Using dotenv
 
-Crie um arquivo `.env` na raiz do seu projeto:
+Create a `.env` file in your project root:
 
 ```env
-SERVER_KEY=sua_chave_aqui
+SERVER_KEY=your_key_here
 ```
 
-O middleware carrega automaticamente as variáveis de ambiente usando `dotenv`.
+The plugin automatically loads environment variables using `dotenv`.
 
-### Configuração manual
+### Manual configuration
 
-Você também pode definir a variável de ambiente diretamente:
+You can also set the environment variable directly:
 
 ```bash
-export SERVER_KEY=sua_chave_aqui
+export SERVER_KEY=your_key_here
 ```
 
-Ou no Windows:
+Or on Windows:
 
 ```cmd
-set SERVER_KEY=sua_chave_aqui
+set SERVER_KEY=your_key_here
 ```
 
-## Uso
+## Usage
 
 ```javascript
-import express from 'express';
-import observabilityRoutes from 'noodown-express';
+import Fastify from 'fastify';
+import observabilityRoutes from 'noodown-fastify';
 
-const app = express();
+const app = Fastify();
 
-// Use o middleware de observabilidade
-app.use(observabilityRoutes);
+// Register the observability plugin
+app.addHook('onRequest', observabilityRoutes);
 
-// Suas rotas aqui
-app.get('/', (req, res) => {
-  res.json({ hello: 'world' });
+// Your routes here
+app.get('/', async (request, reply) => {
+  return { hello: 'world' };
 });
 
-app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+app.listen({ port: 3000 }, (err, address) => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.log(`Server running at ${address}`);
 });
 ```
 
-## Dados Coletados
+## Collected Data
 
-O middleware coleta automaticamente os seguintes dados de cada requisição:
+The plugin automatically collects the following data from each request:
 
-- **method**: Método HTTP (GET, POST, etc.)
-- **path**: Caminho da requisição
-- **status**: Código de status HTTP da resposta
-- **duration_ms**: Duração da requisição em milissegundos
-- **timestamp**: Data e hora da requisição (ISO 8601)
-- **client_ip**: IP do cliente (extraído de headers como `x-forwarded-for`, `x-real-ip`, etc.)
-- **user_agent**: User agent do cliente
-- **origin**: Header Origin
-- **referer**: Header Referer
-- **host**: Header Host
-- **content_type**: Content-Type da requisição
+- **method**: HTTP method (GET, POST, etc.)
+- **path**: Request path
+- **status**: HTTP response status code
+- **duration_ms**: Request duration in milliseconds
+- **timestamp**: Request date and time (ISO 8601)
+- **client_ip**: Client IP (extracted from headers like `x-forwarded-for`, `x-real-ip`, etc.)
+- **user_agent**: Client user agent
+- **origin**: Origin header
+- **referer**: Referer header
+- **host**: Host header
+- **content_type**: Request Content-Type
 
-## Como Funciona
+## How It Works
 
-1. O middleware é executado antes de cada requisição
-2. Registra o tempo de início usando `process.hrtime.bigint()`
-3. Quando a resposta é finalizada (evento `close`), constrói o log com todos os dados
-4. Envia o log de forma assíncrona para a API do Noodown usando `fetch` com `keepalive: true`
-5. Não bloqueia a resposta da requisição (erros são silenciosamente ignorados)
+1. The `onRequest` hook is executed before each request
+2. Records the start time using `process.hrtime.bigint()`
+3. When the response is finalized (`close` event), builds the log with all data
+4. Sends the log asynchronously to the Noodown API using `fetch` with `keepalive: true`
+5. Does not block the request response (errors are silently ignored)
 
-## Licença
+## License
 
 MIT
-

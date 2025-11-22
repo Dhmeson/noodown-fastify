@@ -1,6 +1,6 @@
 # Guia de Publicação no NPM
 
-Este documento contém os passos detalhados para publicar o pacote `noodown-express` no NPM.
+Este documento contém os passos detalhados para publicar o pacote `noodown-fastify` no NPM.
 
 ## Pré-requisitos
 
