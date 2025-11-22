@@ -1,0 +1,16 @@
+src/
+types/
+node_modules/
+*.log
+.env
+.env.*
+.git/
+.gitignore
+.vscode/
+.idea/
+*.tsbuildinfo
+tsconfig.json
+codigo.md
+*.plan.md
+dist/*.map
+
