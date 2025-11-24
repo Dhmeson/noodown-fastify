@@ -1,15 +1,21 @@
 {
   "name": "noodown-fastify",
   "version": "1.0.0",
-  "description": "Observability plugin for Fastify that sends HTTP request logs to the Noodown service.",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "description": "Observability middleware for fastify that sends HTTP request logs to the noodown.com service.",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      },
+      "types": "./dist/cjs/index.d.ts"
     }
   },
   "files": [
@@ -18,8 +24,10 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc",
-    "prepublishOnly": "npm run clean && npm run build"
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "fastify",
@@ -47,9 +55,7 @@
   "dependencies": {
     "dotenv": "^16.4.5"
   },
-  "peerDependencies": {
-    "fastify": "^5.6.2"
-  },
+ 
   "devDependencies": {
     "@types/node": "^20.11.0",
     "typescript": "^5.3.3"

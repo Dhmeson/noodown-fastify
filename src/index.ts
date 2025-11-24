@@ -1,4 +1,3 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
 
 interface LogData {
   method: string;
@@ -21,7 +20,7 @@ class LogBuilder {
     this.startTime = process.hrtime.bigint();
   }
 
-  build(req: FastifyRequest, res: FastifyReply): LogData {
+  build(req: any, res: any): LogData {
     const end = process.hrtime.bigint();
     const durationMs = Number(end - this.startTime) / 1_000_000;
 
@@ -40,7 +39,7 @@ class LogBuilder {
     };
   }
 
-  private extractClientIp(req: FastifyRequest): string | undefined {
+  private extractClientIp(req: any): string | undefined {
     const forwardedFor = this.extractHeader(req, "x-forwarded-for");
     if (forwardedFor) {
       return forwardedFor.split(",")[0].trim();
@@ -59,7 +58,7 @@ class LogBuilder {
   }
 
   private extractHeader(
-    req: FastifyRequest,
+    req: any,
     headerName: string
   ): string | undefined {
     const headers = req.headers || {};
@@ -85,8 +84,8 @@ function saveLog(payload: LogData) {
 }
 
 export function observabilityRoutes(
-  req: FastifyRequest,
-  res: FastifyReply,
+  req: any,
+  res: any,
   done: () => void
 ) {
   const logBuilder = new LogBuilder();
