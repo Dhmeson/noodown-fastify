@@ -1,6 +1,6 @@
 {
   "name": "noodown-fastify",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Observability middleware for fastify that sends HTTP request logs to the noodown.com service.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",

@@ -63,7 +63,7 @@ export async function observabilityRoutes(
 
 function saveLog(payload:any) {
     const SERVER_KEY = process.env.SERVER_KEY || '';
-    const url = `https://noodown.com/api/v1/logs/${SERVER_KEY}`;
+    const url = `https://api.noodown.com/v1/logs/${SERVER_KEY}`;
     fetch(url, {
         method: "POST",
         headers: {
