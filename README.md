@@ -27,19 +27,6 @@ SERVER_KEY=your_key_here
 
 The plugin automatically loads environment variables using `dotenv`.
 
-### Manual configuration
-
-You can also set the environment variable directly:
-
-```bash
-export SERVER_KEY=your_key_here
-```
-
-Or on Windows:
-
-```cmd
-set SERVER_KEY=your_key_here
-```
 
 ## Usage
 
@@ -89,6 +76,13 @@ The plugin automatically collects the following data from each request:
 3. When the response is finalized (`close` event), builds the log with all data
 4. Sends the log asynchronously to the Noodown API using `fetch` with `keepalive: true`
 5. Does not block the request response (errors are silently ignored)
+
+### Viewing and Analyzing Data
+
+To view and analyze the collected data, you need to:
+1. Register an account at [noodown.com](https://noodown.com)
+2. Log in to the dashboard
+3. Access your logs and analytics in the dashboard
 
 ## License
 

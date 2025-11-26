@@ -27,77 +27,49 @@ class LogBuilder {
     return {
       method: req.method || "UNKNOWN",
       path: req.url || "/",
+      
       status: res.statusCode,
       duration_ms: durationMs.toFixed(2),
       timestamp: new Date().toISOString(),
-      client_ip: this.extractClientIp(req),
-      user_agent: this.extractHeader(req, "user-agent"),
-      origin: this.extractHeader(req, "origin"),
-      referer: this.extractHeader(req, "referer"),
-      host: this.extractHeader(req, "host"),
-      content_type: this.extractHeader(req, "content-type"),
+
+      client_ip: req.headers['x-forwarded-for'] ||  req.headers['x-real-ip'] || req.ip,
+      user_agent: req.headers['user-agent'],
+      origin: req.headers['origin'],
+      referer: req.headers['referer'],
+      host: req.headers['host'],
+      content_type: req.headers['content-type'],
+
     };
   }
 
-  private extractClientIp(req: any): string | undefined {
-    const forwardedFor = this.extractHeader(req, "x-forwarded-for");
-    if (forwardedFor) {
-      return forwardedFor.split(",")[0].trim();
-    }
-    const realIp = this.extractHeader(req, "x-real-ip");
-    if (realIp) {
-      return realIp;
-    }
-    if (req.ip) {
-      return req.ip;
-    }
-    if (req.socket?.remoteAddress) {
-      return req.socket.remoteAddress;
-    }
-    return undefined;
-  }
-
-  private extractHeader(
-    req: any,
-    headerName: string
-  ): string | undefined {
-    const headers = req.headers || {};
-    const headerValue = headers[headerName] || headers[headerName.toLowerCase()];
-    if (!headerValue) return undefined;
-    return Array.isArray(headerValue) ? headerValue[0] : headerValue;
-  }
 }
+// Hook para logging de requisições HTTP
+export async function observabilityRoutes(
+  request: any,
+  reply: any,
 
-function saveLog(payload: LogData) {
-  const SERVER_KEY = process.env.SERVER_KEY || '';
-  
-  const url = `https://noodown.com/api/v1/logs/${SERVER_KEY}`;
-  
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-    keepalive: true,
-  }).catch(() => {});
-}
-
-export function observabilityRoutes(
-  req: any,
-  res: any,
-  done: () => void
 ) {
   const logBuilder = new LogBuilder();
-  
-  if (res.raw?.on) {
-    res.raw.on('close', () => {
-      const log = logBuilder.build(req, res);
-      saveLog(log);
+
+    if (reply.raw?.on) {
+    reply.raw.on('close', () => {
+        const log = logBuilder.build(request, reply);
+        saveLog(log);
     });
   }
-  
-  done();
+    
 }
 
-export default observabilityRoutes;
+
+function saveLog(payload:any) {
+    const SERVER_KEY = process.env.SERVER_KEY || '';
+    const url = `https://noodown.com/api/v1/logs/${SERVER_KEY}`;
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        keepalive: true,
+    }).catch(() => { });
+}
